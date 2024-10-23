@@ -1,1 +1,20 @@
-<p>top-navbar works!</p>
+<mat-toolbar color="primary">
+    <button mat-icon-button (click)="sidenav.toggle()" aria-label="Sidenav menu toggle button">
+        <mat-icon *ngIf="!opened">menu</mat-icon>
+        <mat-icon *ngIf="opened">close</mat-icon>
+    </button>
+    <span class="title">PokeMatch</span>
+</mat-toolbar>
+
+<mat-sidenav-container>
+    <mat-sidenav #sidenav [(opened)]="opened">
+        <span *ngIf="!loggedIn" class="login-required-message">Log in to access</span>
+        <div *ngIf="loggedIn" class="sidenav-content">
+            <mat-slide-toggle></mat-slide-toggle>
+            <button mat-stroked-button>
+                <mat-icon>logout</mat-icon>
+                Log out
+            </button>
+        </div>
+    </mat-sidenav>
+</mat-sidenav-container>
