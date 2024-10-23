@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { NgIf } from '@angular/common';
 import { LoginService } from '../../services/login.service';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-top-navbar',
@@ -17,6 +18,7 @@ import { LoginService } from '../../services/login.service';
     MatButtonModule,
     MatSlideToggle,
     NgIf,
+    RouterOutlet,
   ],
   templateUrl: './top-navbar.component.html',
   styleUrl: './top-navbar.component.css'
