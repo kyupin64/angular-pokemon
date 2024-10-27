@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { map, Observable, of } from 'rxjs';
 import { NgIf } from '@angular/common';
 
 import { MatCardModule } from '@angular/material/card';
@@ -28,17 +29,49 @@ import { CreateUserService } from '../../services/create-user.service';
 export class SignupComponent {
   form: FormGroup;
   fb: FormBuilder = new FormBuilder;
-  signupValid: boolean = true;
 
   constructor(fb: FormBuilder, private createUserService: CreateUserService) {
     this.form = fb.group({
-      email: [''],
-      username: [''],
-      password: ['']
+      email: new FormControl('', [ Validators.required, Validators.email ], [ this.uniqueEmailValidator ]),
+      username: new FormControl('', [ Validators.required ], [ this.uniqueUsernameValidator ]),
+      password: new FormControl('', [ Validators.required, Validators.minLength(6) ])
     })
   }
 
+  uniqueEmailValidator: AsyncValidatorFn = (control: AbstractControl): Observable<ValidationErrors | null> => {
+    // if no value, return null
+    if (!control.value) {
+      return of(null); 
+    }
+  
+    // call ifUnique and return error message if unique is false, return null if unique is true
+    return this.createUserService.ifUnique('email', control.value).pipe(
+      map(unique => (unique ? null : { emailTaken: { value: control.value } }))
+    );
+  };
+
+  uniqueUsernameValidator: AsyncValidatorFn = (control: AbstractControl): Observable<ValidationErrors | null> => {
+    // if no value, return null
+    if (!control.value) {
+      return of(null); 
+    }
+  
+    // call ifUnique and return error message if unique is false, return null if unique is true
+    return this.createUserService.ifUnique('username', control.value).pipe(
+      map(unique => (unique ? null : { usernameTaken: { value: control.value } }))
+    );
+  };
+
   onSubmit() {
-    this.createUserService.newUser(this.form.controls['email'].value, this.form.controls['username'].value, this.form.controls['password'].value);
+    // if form is valid, create new user
+    if (this.form.valid) {
+      this.createUserService.newUser(
+        this.form.value.email,
+        this.form.value.username,
+        this.form.value.password
+      );
+    } else {
+      console.log('Form is invalid');
+    }
   }
 }

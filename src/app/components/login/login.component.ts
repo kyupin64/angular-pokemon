@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatCardModule } from '@angular/material/card';
@@ -36,8 +36,8 @@ export class LoginComponent {
     private router: Router
   ) {
     this.form = fb.group({
-      email: [''],
-      password: ['']
+      email: new FormControl('', [ Validators.required ]),
+      password: new FormControl('', [ Validators.required ])
     })
   }
 
@@ -48,12 +48,16 @@ export class LoginComponent {
   }
 
   async onSubmit() {
-    const result = await this.loginService.login(this.form.controls['email'].value, this.form.controls['password'].value);
+    if (this.form.valid && this.loginValid) {
+      const result = await this.loginService.login(this.form.controls['email'].value, this.form.controls['password'].value);
 
-    if (result.email === this.form.controls['email'].value) {
-      this.router.navigate(['./setup']);
+      if (result.email === this.form.controls['email'].value) {
+        this.router.navigate(['./setup']);
+      } else {
+        this.loginValid = false;
+      }
     } else {
-      this.loginValid = false;
+      console.log('Form is invalid')
     }
   }
 }

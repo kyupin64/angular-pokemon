@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-import { addDoc, collection, Firestore } from '@angular/fire/firestore';
+import { addDoc, collection, Firestore, getDocs, query, where } from '@angular/fire/firestore';
 import { User } from '../interfaces/user';
+import { from, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,16 @@ export class CreateUserService {
     private auth: Auth, 
     private db: Firestore
   ) { }
+
+  ifUnique(key: string, value: string): Observable<boolean> {
+    const usersCollection =  collection(this.db, 'users');
+
+    // query usersCollection to find existing username/email
+    const q = query(usersCollection, where(key, '==', value));
+    return from(getDocs(q)).pipe(
+      map(querySnapshot => querySnapshot.empty) // if no existing username/email is found, return true (unique)
+    );
+  }
 
   async newUser(email: string, username: string, password: string) {
     try {

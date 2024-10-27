@@ -3,32 +3,40 @@
         <form [formGroup]="form">
             <h2>Sign up</h2>
 
-            <mat-error *ngIf="!signupValid">
-                Unable to create new account, please check that all fields are valid
-            </mat-error>
-
             <mat-form-field>
                 <input matInput type="text" placeholder="Email" formControlName="email" required>
-                <mat-error>
-                    Please provide a valid email address
+                <mat-error *ngIf="form.get('email')?.hasError('required')">
+                    Email is required
+                </mat-error>
+                <mat-error *ngIf="form.get('email')?.hasError('emailTaken')">
+                    "{{ form.get('email').value }}" has an existing account
+                </mat-error>
+                <mat-error *ngIf="form.get('email')?.errors?.['email']">
+                    Please enter a valid email address
                 </mat-error>
             </mat-form-field>
 
             <mat-form-field>
                 <input matInput type="text" placeholder="Username" formControlName="username" required>
-                <mat-error>
-                    Please provide a valid username
+                <mat-error *ngIf="form.get('username')?.hasError('required')">
+                    Username is required
+                </mat-error>
+                <mat-error *ngIf="form.get('username')?.errors?.['usernameTaken']">
+                    The username "{{ form.get('username').value }}" is taken
                 </mat-error>
             </mat-form-field>
 
             <mat-form-field>
                 <input matInput type="password" placeholder="Password" formControlName="password" required>
-                <mat-error>
-                    Please provide a valid password
+                <mat-error *ngIf="form.get('password')?.hasError('required')">
+                    Password is required
+                </mat-error>
+                <mat-error *ngIf="form.get('password')?.errors?.['minlength']">
+                    Password must be at least 6 characters
                 </mat-error>
             </mat-form-field>
 
-            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!signupValid">Create new account</button>
+            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.valid">Create new account</button>
         </form>
     </mat-card-content>
 </mat-card>
