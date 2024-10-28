@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
 import { collection, Firestore, getDocs, limit, query, where } from '@angular/fire/firestore'
+import { User } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
   loggedIn: boolean = false;
-  currentUser: Object;
+  currentUser: User;
 
   constructor(
     private auth: Auth,
@@ -16,6 +17,10 @@ export class LoginService {
 
   getLoggedInBool() {
     return this.loggedIn;
+  }
+
+  getCurrentUser() {
+    return this.currentUser;
   }
 
   async login(email: string, password: string) {
@@ -29,7 +34,7 @@ export class LoginService {
       const q = query(usersCollection, where('uid', '==', user.uid))
       const querySnapshot = await getDocs(q);
 
-      let foundUser = {};
+      let foundUser;
       querySnapshot.forEach((doc,) => {
         foundUser = doc.data();
       }, limit(1));

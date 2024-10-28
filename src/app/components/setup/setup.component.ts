@@ -1,12 +1,92 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
+
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+
+import { User } from '../../interfaces/user';
+import { UsersService } from '../../services/users.service';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-setup',
   standalone: true,
-  imports: [],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatButtonModule
+  ],
   templateUrl: './setup.component.html',
   styleUrl: './setup.component.css'
 })
 export class SetupComponent {
+  form: FormGroup;
+  fb: FormBuilder = new FormBuilder;
+  allUsers$: Observable<User[]>;
+  currentUser: User;
 
+  constructor(
+    fb: FormBuilder,
+    private usersService: UsersService,
+    private loginService: LoginService,
+    private router: Router
+  ) {
+    this.currentUser = this.loginService.getCurrentUser();
+
+    this.form = fb.group({
+      playersNum: new FormControl(1, [ Validators.required ]),
+      matchesNum: new FormControl('', [ Validators.required ]),
+      cardSet: new FormControl('', [ Validators.required ]),
+      players: new FormArray([new FormControl(this.currentUser.username)])
+    })
+  }
+
+  ngOnInit() {
+    this.form.valueChanges.subscribe(value => {
+      console.log(value);
+    });
+
+    this.allUsers$ = this.usersService.getAllUsers();
+
+    // update number of players when user changes selected number of players
+    this.form.get('playersNum')?.valueChanges.subscribe(value => {
+      this.updatePlayers(value);
+    });
+  }
+
+  // add or remove players from players FormArray to match user selected number of players
+  updatePlayers(num: number): void {
+    const playersArray = this.players;
+    while (playersArray.length !== num) {
+      if (playersArray.length < num) {
+        playersArray.push(this.createPlayerControl());
+      } else {
+        playersArray.removeAt(playersArray.length - 1);
+      }
+    }
+  }
+
+  // create new FormControl when adding players
+  createPlayerControl(): FormControl {
+    return new FormControl('', [Validators.required]);
+  }
+
+  // players FormArray getter
+  get players(): FormArray {
+    return this.form.get('players') as FormArray;
+  }
+
+  onSubmit() {
+    console.log('submitted')
+  }
 }
