@@ -51,7 +51,11 @@
             <mat-form-field>
                 <mat-label>Card Set</mat-label>
                 <mat-select formControlName="cardSet" required>
-                    <mat-option [value]="4">placeholder</mat-option>
+                    <div *ngIf="allCardSets$ | async as allCardSets">
+                        <mat-optgroup *ngFor="let setSeries of allCardSets" [label]="setSeries.series">
+                            <mat-option *ngFor="let set of setSeries.sets" [value]="set.id">{{ set.name }}</mat-option>
+                        </mat-optgroup>
+                    </div>
                 </mat-select>
                 <mat-error *ngIf="form.get('cardSet')?.hasError('required')">
                     Card set is required

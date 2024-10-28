@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { User } from '../../interfaces/user';
 import { UsersService } from '../../services/users.service';
 import { LoginService } from '../../services/login.service';
+import { CardsService } from '../../services/cards.service';
 
 @Component({
   selector: 'app-setup',
@@ -33,12 +34,14 @@ export class SetupComponent {
   form: FormGroup;
   fb: FormBuilder = new FormBuilder;
   allUsers$: Observable<User[]>;
+  allCardSets$: Observable<{ series: string, sets: any[] }[]>;
   currentUser: User;
 
   constructor(
     fb: FormBuilder,
     private usersService: UsersService,
     private loginService: LoginService,
+    private cardsService: CardsService,
     private router: Router
   ) {
     this.currentUser = this.loginService.getCurrentUser();
@@ -57,6 +60,23 @@ export class SetupComponent {
     });
 
     this.allUsers$ = this.usersService.getAllUsers();
+
+    // fetch and process card sets
+    this.allCardSets$ = this.cardsService.getAllCardSets().pipe(
+      map(sets => {
+        // group sets by series
+        const seriesMap = new Map<string, any[]>();
+        sets.forEach(set => {
+          const seriesName = set.series;
+          if (!seriesMap.has(seriesName)) {
+            seriesMap.set(seriesName, []);
+          }
+          seriesMap.get(seriesName)!.push(set);
+        });
+        // convert map to array
+        return Array.from(seriesMap.entries()).map(([series, sets]) => ({ series, sets }));
+      })
+    );
 
     // update number of players when user changes selected number of players
     this.form.get('playersNum')?.valueChanges.subscribe(value => {
