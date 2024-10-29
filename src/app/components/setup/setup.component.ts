@@ -14,6 +14,7 @@ import { User } from '../../interfaces/user';
 import { UsersService } from '../../services/users.service';
 import { LoginService } from '../../services/login.service';
 import { CardsService } from '../../services/cards.service';
+import { GameService } from '../../services/game.service';
 
 @Component({
   selector: 'app-setup',
@@ -42,6 +43,7 @@ export class SetupComponent {
     private usersService: UsersService,
     private loginService: LoginService,
     private cardsService: CardsService,
+    private gameService: GameService,
     private router: Router
   ) {
     this.currentUser = this.loginService.getCurrentUser();
@@ -55,10 +57,6 @@ export class SetupComponent {
   }
 
   ngOnInit() {
-    this.form.valueChanges.subscribe(value => {
-      console.log(value);
-    });
-
     this.allUsers$ = this.usersService.getAllUsers();
 
     // fetch and process card sets
@@ -106,7 +104,19 @@ export class SetupComponent {
     return this.form.get('players') as FormArray;
   }
 
-  onSubmit() {
-    console.log('submitted')
+  async onSubmit() {
+    if (this.form.valid) {
+      const result = await this.gameService.createNewGame(
+        this.form.controls['matchesNum'].value, 
+        this.form.controls['cardSet'].value, 
+        this.form.controls['players'].value
+      );
+
+      if (result === true) {
+        this.router.navigate(['./matching']);
+      }
+    } else {
+      console.log('Form is invalid');
+    }
   }
 }

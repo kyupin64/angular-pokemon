@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { collection, Firestore, getDocs, query } from '@angular/fire/firestore';
+import { collection, Firestore, getDocs, limit, query, where } from '@angular/fire/firestore';
 import { from, map, Observable } from 'rxjs';
 import { User } from '../interfaces/user';
 
@@ -25,5 +25,27 @@ export class UsersService {
     }
   }
 
+  async getUserWithUsername(username: string): Promise<User> {
+    try {
+      // find user in firestore users collection
+      const usersCollection =  collection(this.db, 'users');
+      const q = query(usersCollection, where('username', '==', username))
+      const querySnapshot = await getDocs(q);
 
+      let foundUser;
+      querySnapshot.forEach((doc,) => {
+        foundUser = doc.data();
+      }, limit(1));
+
+      // return user if it exists
+      if (foundUser) {
+        return foundUser;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      const errorCode = error.code;
+      return error.message;
+    }
+  }
 }
