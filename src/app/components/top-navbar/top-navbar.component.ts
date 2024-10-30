@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
+import { NgIf } from '@angular/common';
+import { Router, RouterOutlet } from '@angular/router';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { NgIf } from '@angular/common';
+
 import { LoginService } from '../../services/login.service';
-import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-top-navbar',

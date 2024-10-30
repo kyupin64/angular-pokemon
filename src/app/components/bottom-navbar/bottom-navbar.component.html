@@ -1,1 +1,11 @@
-<p>bottom-navbar works!</p>
+<mat-toolbar color="primary" *ngIf="loggedIn">
+    <button mat-flat-button (click)="goToSetup()" aria-label="Button to navigate to setup page">
+        Setup
+    </button>
+    <button mat-flat-button (click)="goToMatching()" aria-label="Button to navigate to matching page">
+        Matching
+    </button>
+    <button mat-flat-button (click)="goToProfile()" aria-label="Button to navigate to profile page">
+        Profile
+    </button>
+</mat-toolbar>

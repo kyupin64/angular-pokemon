@@ -1,14 +1,18 @@
 mat-toolbar {
-    height: 10%;
+    height: 10vh;
 }
 
 mat-sidenav-container {
-    height: 90%;
+    height: 82vh;
 }
 
 mat-sidenav {
     border-radius: 0;
     width: 60%;
+}
+
+mat-sidenav-content {
+    height: 82vh;
 }
 
 mat-slide-toggle {
@@ -22,7 +26,7 @@ mat-slide-toggle {
 }
 
 .sidenav-content {
-    height: 100%;
+    height: 82vh;
     display: flex;
     flex-direction: column;
     align-items: center;
