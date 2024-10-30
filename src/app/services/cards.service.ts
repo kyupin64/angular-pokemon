@@ -37,6 +37,7 @@ export class CardsService {
                 name: card.name,
                 found: false,
                 playerFound: null,
+                revealed: false,
                 images: {
                   small: card.images.small,
                   large: card.images.large

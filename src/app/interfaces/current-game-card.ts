@@ -5,6 +5,7 @@ export interface CurrentGameCard {
     name: string,
     found: boolean,
     playerFound: User | null,
+    revealed: boolean,
     images: {
         small: string,
         large: string

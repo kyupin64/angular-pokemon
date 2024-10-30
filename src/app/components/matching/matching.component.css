@@ -1,0 +1,57 @@
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    width: 100vw;
+}
+  
+.players {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+}
+
+.player-card {
+    width: 135px;
+    height: 9vh;
+    align-items: center;
+}
+
+mat-card-header {
+    padding: 4px;
+}
+
+.turn {
+    color: red;
+}
+  
+.game-area {
+    text-align: center;
+    height: 70vh;
+}
+  
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+  
+.card {
+    width: 100px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.game-info {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+  
+.round-info, .matches-info {
+    padding: 16px;
+    text-align: center;
+}

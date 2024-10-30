@@ -1,1 +1,38 @@
-<p>matching works!</p>
+<form class="game-container" [formGroup]="form">
+    <div class="players">
+        <mat-card *ngFor="let player of players.controls; let i = index" class="player-card" [class.turn]="isPlayerTurn(player.get('uid').value)">
+            <mat-card-header>
+                <mat-card-title>{{ player.get('username').value }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p *ngIf="isPlayerTurn(player.get('uid').value)">It's your turn!</p>
+            </mat-card-content>
+        </mat-card>
+    </div>
+  
+    <div class="game-area" formArrayName="cards">
+        <div class="card-grid">
+            <div class="card" *ngFor="let card of cards.controls; let i = index" (click)="revealCard(cards.at(i))">
+                <mat-card *ngIf="!card.get('revealed').value">
+                    <mat-card-content>
+                        <p>?</p>
+                    </mat-card-content>
+                </mat-card>
+                <mat-card *ngIf="card.get('revealed').value">
+                    <mat-card-content>
+                        <img [src]="card.get('images').get('small').value" alt="Card Image" />
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+  
+    <div class="game-info">
+        <mat-card class="round-info">
+            <mat-card-title>Round: {{ currentGame.round }}</mat-card-title>
+        </mat-card>
+        <mat-card class="matches-info">
+            <mat-card-title>Matches Left: {{ currentGame.totalMatches }}</mat-card-title>
+        </mat-card>
+    </div>
+</form>
