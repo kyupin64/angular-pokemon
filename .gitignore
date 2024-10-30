@@ -38,6 +38,10 @@ testem.log
 /typings
 environment.ts
 environment.development.ts
+firebase.json
+.firebaserc
+/.github
+/.firebase
 
 # System files
 .DS_Store

@@ -5,6 +5,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } f
 import { MatCardModule } from '@angular/material/card';
 import { CurrentGame } from '../../interfaces/current-game';
 import { GameService } from '../../services/game.service';
+import { CurrentGameCard } from '../../interfaces/current-game-card';
 
 @Component({
   selector: 'app-matching',
@@ -20,39 +21,49 @@ import { GameService } from '../../services/game.service';
 export class MatchingComponent {
   form: FormGroup;
   fb: FormBuilder = new FormBuilder;
-  currentGame: CurrentGame;
+  currentGame$: CurrentGame | null = null;
+  cardsArr: Array<CurrentGameCard> = [];
 
   constructor(
     fb: FormBuilder,
     private gameService: GameService
   ) {
-    this.currentGame = this.gameService.getCurrentGame();
-    console.log('Current Game:', this.currentGame);
-
-    const cardFormGroups = this.initializeCards();
-    const playerFormGroups = this.initializePlayers();
-
     this.form = this.fb.group({
-      cards: new FormArray(cardFormGroups),
-      players: new FormArray(playerFormGroups)
+      cards: new FormArray([]),
+      players: new FormArray([])
     })
+  }
 
-    console.log(this.form.value) // empty cards array and full players array
+  ngOnInit() {
+    this.gameService.getCurrentGame().subscribe((currentGame) => {
+      if (currentGame) {
+        this.currentGame$ = currentGame;
+        this.cardsArr = currentGame.cards;
+        console.log('Current Game:', this.currentGame$);
+
+        const cardFormGroups = this.initializeCards();
+        const playerFormGroups = this.initializePlayers();
+
+        this.form.setControl('cards', new FormArray(cardFormGroups));
+        this.form.setControl('players', new FormArray(playerFormGroups));
+
+        console.log(this.form.value); // empty cards array and full players array
+      }
+    });
   }
 
   initializeCards() {
-    const cardsArr = this.currentGame.cards;
-    console.log('cardsArr: ', cardsArr) // logs array with cards in it (not empty)
-    console.log('Is cards an array?', Array.isArray(cardsArr)); // logs true
+    console.log('cardsArr: ', this.cardsArr) // logs array with cards in it (not empty)
+    console.log('Is cards an array?', Array.isArray(this.cardsArr)); // logs true
 
     // shuffle cards
-    for (let i = cardsArr.length - 1; i > 0; i--) {
+    for (let i = this.cardsArr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [cardsArr[i], cardsArr[j]] = [cardsArr[j], cardsArr[i]];
+      [this.cardsArr[i], this.cardsArr[j]] = [this.cardsArr[j], this.cardsArr[i]];
     }
 
     // set up FormArray
-    const cardFormGroups = cardsArr.map(card => {
+    const cardFormGroups = this.cardsArr.map(card => {
       console.log('card: ', card) // logs nothing
       const newGroup = this.fb.group({
         id: new FormControl(card.id),
@@ -78,7 +89,7 @@ export class MatchingComponent {
     // create array to store players
     let playersArr = [];
     for (let i = 1; i < 5; i++) {
-      const player = this.currentGame[`player${i}`];
+      const player = this.currentGame$[`player${i}`];
       if (player) {
         playersArr.push(player)
       }
@@ -93,7 +104,7 @@ export class MatchingComponent {
   }
 
   isPlayerTurn(playerId: string): boolean {
-    return this.currentGame.turn?.uid === playerId;
+    return this.currentGame$.turn?.uid === playerId;
   }
 
   revealCard(card: any): void {

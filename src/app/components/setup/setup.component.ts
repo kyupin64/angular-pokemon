@@ -36,7 +36,7 @@ export class SetupComponent {
   fb: FormBuilder = new FormBuilder;
   allUsers$: Observable<User[]>;
   allCardSets$: Observable<{ series: string, sets: any[] }[]>;
-  currentUser: User;
+  currentUser$: User | null = null;
 
   constructor(
     fb: FormBuilder,
@@ -46,17 +46,22 @@ export class SetupComponent {
     private gameService: GameService,
     private router: Router
   ) {
-    this.currentUser = this.loginService.getCurrentUser();
-
     this.form = fb.group({
       playersNum: new FormControl(1, [ Validators.required ]),
       matchesNum: new FormControl('', [ Validators.required ]),
       cardSet: new FormControl('', [ Validators.required ]),
-      players: new FormArray([new FormControl(this.currentUser.username)])
+      players: new FormArray([])
     })
   }
 
   ngOnInit() {
+    this.loginService.getCurrentUser().subscribe((currentUser) => {
+      if (currentUser) {
+        this.currentUser$ = currentUser;
+        console.log(currentUser)
+        this.players.push(this.createPlayerControl(currentUser.username));
+      }
+    });
     this.allUsers$ = this.usersService.getAllUsers();
 
     // fetch and process card sets
@@ -95,8 +100,8 @@ export class SetupComponent {
   }
 
   // create new FormControl when adding players
-  createPlayerControl(): FormControl {
-    return new FormControl('', [Validators.required]);
+  createPlayerControl(username: string = ''): FormControl {
+    return new FormControl(username, [Validators.required]);
   }
 
   // players FormArray getter

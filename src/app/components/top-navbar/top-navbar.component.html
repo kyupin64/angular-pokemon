@@ -11,7 +11,7 @@
         <span *ngIf="!loggedIn" class="login-required-message">Log in to access</span>
         <div *ngIf="loggedIn" class="sidenav-content">
             <mat-slide-toggle></mat-slide-toggle>
-            <button mat-stroked-button>
+            <button mat-stroked-button (click)="logout()">
                 <mat-icon>logout</mat-icon>
                 Log out
             </button>

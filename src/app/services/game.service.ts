@@ -6,12 +6,13 @@ import { CurrentGameCard } from '../interfaces/current-game-card';
 
 import { CardsService } from './cards.service';
 import { UsersService } from './users.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  currentGame: CurrentGame;
+  private currentGame = new BehaviorSubject<CurrentGame | null>(null);
   playerUsers: Array<User | null> = [];
   randomCards: Array<CurrentGameCard> = [];
   turn: User;
@@ -19,10 +20,17 @@ export class GameService {
   constructor(
     private cardsService: CardsService,
     private usersService: UsersService
-  ) { }
+  ) {
+    // check localStorage on initialization
+    const gameData = localStorage.getItem('game');
+    if (gameData) {
+      const game: CurrentGame = JSON.parse(gameData);
+      this.currentGame.next(game);
+    }
+  }
 
   getCurrentGame() {
-    return this.currentGame;
+    return this.currentGame.asObservable();
   }
 
   async createNewGame(matchesNum: number, cardSet: string, players: Array<string>): Promise<boolean> {
@@ -34,8 +42,8 @@ export class GameService {
     // convert player useernames to User objects
     await this.getPlayersAsUsers(players);
 
-    // add all info to currentGame object
-    this.currentGame = {
+    // add all info to newGame object
+    const newGame: CurrentGame = ({
       cardSetId: cardSet,
       cards: this.randomCards,
       player1: this.playerUsers[0] ? this.playerUsers[0] : null,
@@ -45,7 +53,11 @@ export class GameService {
       turn: this.turn,
       totalMatches: matchesNum,
       round: 1
-    }
+    })
+
+    // set currentGame to newGame and add the item to localStorage
+    this.currentGame.next(newGame)
+    localStorage.setItem('game', JSON.stringify(newGame));
 
     return true;
   }
@@ -65,7 +77,7 @@ export class GameService {
 
     // add each random card to randomCards array
     randomCardSet.forEach(card => {
-      if (this.currentGame.cards.length < matchesNum * 2) {
+      if (this.currentGame.value.cards.length < matchesNum * 2) {
         this.randomCards.push(card);
         this.randomCards.push(card); // add duplicate so there are 2 of each card
       } else {

@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { NgIf } from '@angular/common';
 import { LoginService } from '../../services/login.service';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-top-navbar',
@@ -27,7 +27,19 @@ export class TopNavbarComponent {
   opened: boolean = false;
   loggedIn: boolean;
 
-  constructor(private loginService: LoginService) {
-    this.loggedIn = this.loginService.getLoggedInBool();
+  constructor(
+    private loginService: LoginService,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    this.loginService.getLoggedInBool().subscribe((loggedIn) => {
+      this.loggedIn = loggedIn;
+    });
+  }
+
+  logout() {
+    this.loginService.logout();
+    this.router.navigate(['./home']);
   }
 }

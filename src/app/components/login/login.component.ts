@@ -51,7 +51,10 @@ export class LoginComponent {
     if (this.form.valid && this.loginValid) {
       const result = await this.loginService.login(this.form.controls['email'].value, this.form.controls['password'].value);
 
-      if (result.email === this.form.controls['email'].value) {
+      if (result && result.email === this.form.controls['email'].value) {
+        this.form.get('email')?.setErrors(null);
+        this.form.get('password')?.setErrors(null);
+        this.form.reset();
         this.router.navigate(['./setup']);
       } else {
         this.loginValid = false;
