@@ -40,7 +40,8 @@ export class CardsService {
                 revealed: false,
                 images: {
                   small: card.images.small,
-                  large: card.images.large
+                  large: card.images.large,
+                  setLogo: card.set.images.logo
                 }
               })) as CurrentGameCard[];
             })
@@ -49,5 +50,14 @@ export class CardsService {
       const errorCode = error.code;
       return error.message;
     }
+  }
+
+  shuffleCards(cards: Array<CurrentGameCard>) {
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+
+    return cards;
   }
 }

@@ -8,6 +8,7 @@ export interface CurrentGameCard {
     revealed: boolean,
     images: {
         small: string,
-        large: string
+        large: string,
+        setLogo: string
     }
 }

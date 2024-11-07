@@ -34,6 +34,11 @@ export class GameService {
   }
 
   async createNewGame(matchesNum: number, cardSet: string, players: Array<string>): Promise<boolean> {
+    //reset current game
+    this.currentGame.next(null);
+    this.playerUsers = [];
+    this.randomCards = [];
+
     // subscribe to getAllCardsInSet and determine which cards are used for matching
     this.cardsService.getAllCardsInSet(cardSet).subscribe(cards => {
       this.getRandomCards(cards, matchesNum);
@@ -84,6 +89,8 @@ export class GameService {
         return
       }
     });
+
+    this.randomCards = this.cardsService.shuffleCards(this.randomCards);
   }
 
   async getPlayersAsUsers(players: Array<string>) {

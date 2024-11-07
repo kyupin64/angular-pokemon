@@ -61,5 +61,11 @@ mat-card-header {
 
 img {
     width: 144px;
+}
+
+.card-content {
+    width: 144px;
     height: 198px;
+    display: flex;
+    align-items: center;
 }

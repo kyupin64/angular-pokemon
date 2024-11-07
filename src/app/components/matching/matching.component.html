@@ -14,12 +14,12 @@
         <div class="card-grid">
             <div class="card" *ngFor="let card of cards.controls; let i = index" (click)="revealCard(cards.at(i))">
                 <mat-card *ngIf="!card.get('revealed').value">
-                    <mat-card-content>
-                        <p>?</p>
+                    <mat-card-content class="card-content">
+                        <img [src]="card.get('images').get('setLogo').value" alt="Set Logo Image" />
                     </mat-card-content>
                 </mat-card>
                 <mat-card *ngIf="card.get('revealed').value">
-                    <mat-card-content>
+                    <mat-card-content class="card-content">
                         <img [src]="card.get('images').get('small').value" alt="Card Image" />
                     </mat-card-content>
                 </mat-card>

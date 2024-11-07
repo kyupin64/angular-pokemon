@@ -56,12 +56,6 @@ export class MatchingComponent {
     console.log('cardsArr: ', this.cardsArr) // logs array with cards in it (not empty)
     console.log('Is cards an array?', Array.isArray(this.cardsArr)); // logs true
 
-    // shuffle cards
-    for (let i = this.cardsArr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [this.cardsArr[i], this.cardsArr[j]] = [this.cardsArr[j], this.cardsArr[i]];
-    }
-
     // set up FormArray
     const cardFormGroups = this.cardsArr.map(card => {
       console.log('card: ', card) // logs nothing
@@ -73,7 +67,8 @@ export class MatchingComponent {
         revealed: new FormControl(card.revealed),
         images: this.fb.group({
           small: new FormControl(card.images.small), 
-          large: new FormControl(card.images.large)
+          large: new FormControl(card.images.large),
+          setLogo: new FormControl(card.images.setLogo),
         })
       });
 
