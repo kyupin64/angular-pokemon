@@ -28,17 +28,20 @@ mat-card-header {
 .game-area {
     text-align: center;
     height: 70vh;
+    padding: 24px;
+    padding-top: 30px;
 }
   
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(8, minmax(144px, 1fr));
+    gap: 45px;
+    justify-items: center;
 }
   
 .card {
-    width: 100px;
-    height: 150px;
+    width: 144px;
+    height: 198px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,4 +57,9 @@ mat-card-header {
 .round-info, .matches-info {
     padding: 16px;
     text-align: center;
+}
+
+img {
+    width: 144px;
+    height: 198px;
 }
