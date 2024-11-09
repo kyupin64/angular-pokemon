@@ -23,6 +23,8 @@ export class MatchingComponent {
   fb: FormBuilder = new FormBuilder;
   currentGame$: CurrentGame | null = null;
   cardsArr: Array<CurrentGameCard> = [];
+  numCardsRevealed: number = 0;
+  revealedCard: any | null;
 
   constructor(
     fb: FormBuilder,
@@ -103,7 +105,74 @@ export class MatchingComponent {
   }
 
   revealCard(card: any): void {
-    card.get('revealed').setValue(true);
+    // if the card clicked hasn't already been found (matched) and there isn't already 2 cards revealed, show the card and set the next card to end the turn
+    if (!card.value.found && this.numCardsRevealed < 2) {
+      this.numCardsRevealed += 1;
+      card.get('revealed').setValue(true);
+
+      // if this is the first card the player has revealed, save card info
+      if (this.numCardsRevealed === 1) {
+        this.revealedCard = card;
+
+      // if this is the second card revealed, check whether there's a match
+      } else {
+        if (this.revealedCard.value.id === card.value.id) {
+          this.ifMatchFound(card);
+        } else {
+          this.ifNoMatchFound(card);
+        }
+      }
+    }
+  }
+
+  ifMatchFound(card: any) {
+    // add point to player who found the match
+    // code
+
+    console.log("congrats! you found a match!"); // placeholder
+
+    // wait two seconds then set found to true on both cards and reset turn info
+    setTimeout(() => {
+      card.get('found').setValue(true);
+      this.revealedCard.get('found').setValue(true);
+      this.revealedCard = null;
+      this.numCardsRevealed = 0;
+
+      // check if that was the last match, and if so, end the game
+      // code
+    }, 2000);
+  }
+
+  ifNoMatchFound(card: any) {
+    console.log('no match found'); // placeholder
+
+    // wait two seconds then hide both cards again, reset turn info, and switch to the next player's turn/next round
+    setTimeout(() => {
+      card.get('revealed').setValue(false);
+      this.revealedCard.get('revealed').setValue(false);
+      this.revealedCard = null;
+      this.numCardsRevealed = 0;
+      let players = this.form.controls['players'].value;
+
+      // if one player, switch to next round
+      if (players.length === 1) {
+        this.currentGame$.round += 1;
+
+      // if multiple players and it's the last player's turn, switch to next round and set turn to first player
+      } else if (this.currentGame$.turn === players[players.length - 1]) {
+        this.currentGame$.round += 1;
+        this.currentGame$.turn = players[0];
+
+      // if multiple players and not last player's turn, switch to next player's turn
+      } else {
+        for (let i = 0; i < players.length; i++) {
+          if (this.currentGame$.turn.uid === players[i].uid) {
+            this.currentGame$.turn = players[i + 1];
+            return;
+          }
+        }
+      }
+    }, 2000);
   }
 
   // cards FormArray getter
