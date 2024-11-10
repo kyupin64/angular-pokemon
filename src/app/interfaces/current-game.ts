@@ -9,6 +9,6 @@ export interface CurrentGame {
     player3: User | null,
     player4: User | null,
     turn: User,
-    totalMatches: number,
+    matchesRemaining: number,
     round: number
 }

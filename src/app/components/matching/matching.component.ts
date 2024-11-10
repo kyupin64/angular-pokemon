@@ -146,6 +146,7 @@ export class MatchingComponent {
       this.revealedCard.get('found').setValue(true);
       this.revealedCard = null;
       this.numCardsRevealed = 0;
+      this.currentGame$.matchesRemaining -= 1;
 
       // check if that was the last match, and if so, end the game
       // code

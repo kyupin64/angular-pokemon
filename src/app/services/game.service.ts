@@ -56,7 +56,7 @@ export class GameService {
       player3: this.playerUsers[2] ? this.playerUsers[2] : null,
       player4: this.playerUsers[3] ? this.playerUsers[3] : null,
       turn: this.turn,
-      totalMatches: matchesNum,
+      matchesRemaining: matchesNum,
       round: 1
     })
 
