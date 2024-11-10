@@ -1,5 +1,9 @@
 <form class="game-container" [formGroup]="form">
-    <div class="players">
+    <div class="loading" *ngIf="loadingGame">
+        <h6>Loading game...</h6>
+    </div>
+
+    <div class="players"  *ngIf="!loadingGame">
         <mat-card *ngFor="let player of players.controls; let i = index" class="player-card" [class.turn]="isPlayerTurn(player.get('uid').value)">
             <mat-card-header>
                 <mat-card-title>{{ player.get('username').value }}</mat-card-title>
@@ -10,7 +14,7 @@
         </mat-card>
     </div>
   
-    <div class="game-area" formArrayName="cards">
+    <div class="game-area" formArrayName="cards" *ngIf="!loadingGame">
         <div class="card-grid">
             <div class="card" *ngFor="let card of cards.controls; let i = index" (click)="revealCard(cards.at(i))">
                 <mat-card *ngIf="!card.get('revealed').value">
@@ -27,7 +31,7 @@
         </div>
     </div>
   
-    <div class="game-info">
+    <div class="game-info"  *ngIf="!loadingGame">
         <mat-card class="round-info">
             <mat-card-title>Round: {{ currentGame$.round }}</mat-card-title>
         </mat-card>
