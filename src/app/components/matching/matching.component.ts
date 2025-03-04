@@ -24,6 +24,7 @@ export class MatchingComponent {
   numCardsRevealed: number = 0;
   revealedCard: any | null;
   loadingGame: boolean = true;
+  gameFinished: boolean = false;
 
   constructor(
     fb: FormBuilder,
@@ -105,7 +106,8 @@ export class MatchingComponent {
     return playersArr.map(player => this.fb.group({
       uid: new FormControl(player.uid),
       username: new FormControl(player.username),
-      email: new FormControl(player.email)
+      email: new FormControl(player.email),
+      score: new FormControl(0)
     }));
   }
 
@@ -135,22 +137,35 @@ export class MatchingComponent {
   }
 
   ifMatchFound(card: any) {
-    // add point to player who found the match
-    // code
-
     console.log("congrats! you found a match!"); // placeholder
 
-    // wait two seconds then set found to true on both cards and reset turn info
+    // wait two seconds then set found to true on both cards, reset cards, and add point
     setTimeout(() => {
       card.get('found').setValue(true);
       this.revealedCard.get('found').setValue(true);
+      card.get('playerFound').setValue(this.currentGame$.turn);
+      this.revealedCard.get('playerFound').setValue(this.currentGame$.turn);
       this.revealedCard = null;
       this.numCardsRevealed = 0;
       this.currentGame$.matchesRemaining -= 1;
 
+      // add point to player who found match
+      this.players.controls.forEach(player => {
+        if (player.get('uid')?.value === this.currentGame$.turn.uid) {
+          const currentScore = player.get('score')?.value || 0;
+          player.get('score')?.setValue(currentScore + 1);
+        }
+      });
+
       // check if that was the last match, and if so, end the game
-      // code
+      if (this.currentGame$.matchesRemaining === 0) {
+        this.endGame();
+      }
     }, 2000);
+  }
+
+  endGame() {
+    this.gameFinished = true;
   }
 
   ifNoMatchFound(card: any) {
@@ -169,7 +184,7 @@ export class MatchingComponent {
         this.currentGame$.round += 1;
 
       // if multiple players and it's the last player's turn, switch to next round and set turn to first player
-      } else if (this.currentGame$.turn === players[players.length - 1]) {
+      } else if (this.currentGame$.turn.uid === players[players.length - 1].uid) {
         this.currentGame$.round += 1;
         this.currentGame$.turn = players[0];
 

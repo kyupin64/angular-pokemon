@@ -1,10 +1,16 @@
+.page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 82vh;
+    width: 100vw;
+}
+
 .game-container {
     display: flex;
     flex-direction: column;
     height: 82vh;
     width: 100vw;
-    justify-content: center;
-    align-items: center;
 }
   
 .players {
