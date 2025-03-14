@@ -44,17 +44,14 @@ export class GameService {
       this.getRandomCards(cards, matchesNum);
     })
 
-    // convert player useernames to User objects
+    // convert player usernames to User objects
     await this.getPlayersAsUsers(players);
 
     // add all info to newGame object
     const newGame: CurrentGame = ({
       cardSetId: cardSet,
       cards: this.randomCards,
-      player1: this.playerUsers[0] ? this.playerUsers[0] : null,
-      player2: this.playerUsers[1] ? this.playerUsers[1] : null,
-      player3: this.playerUsers[2] ? this.playerUsers[2] : null,
-      player4: this.playerUsers[3] ? this.playerUsers[3] : null,
+      players: this.playerUsers,
       turn: this.turn,
       matchesRemaining: matchesNum,
       round: 1
@@ -84,7 +81,7 @@ export class GameService {
     randomCardSet.forEach(card => {
       if (this.currentGame.value.cards.length < matchesNum * 2) {
         this.randomCards.push(card);
-        this.randomCards.push(card); // add duplicate so there are 2 of each card
+        this.randomCards.push({ ...card }); // add duplicate so there are 2 of each card
       } else {
         return
       }

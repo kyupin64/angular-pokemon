@@ -3,30 +3,30 @@
         <h6>Loading game...</h6>
     </div>
 
-    <form class="game-container" [formGroup]="form" *ngIf="!loadingGame && !gameFinished">
+    <div class="game-container" *ngIf="!loadingGame && !gameFinished">
         <div class="players">
-            <mat-card *ngFor="let player of players.controls; let i = index" class="player-card" [class.turn]="isPlayerTurn(player.get('uid').value)">
+            <mat-card *ngFor="let player of players; let i = index" class="player-card" [class.turn]="isPlayerTurn(player.uid)">
                 <mat-card-header>
-                    <mat-card-title>{{ player.get('username').value }}</mat-card-title>
+                    <mat-card-title>{{ player.username }}</mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                    <p>Score: {{ player.get('score').value }}</p>
-                    <p *ngIf="isPlayerTurn(player.get('uid').value)">It's your turn!</p>
+                    <p>Points: {{ player.points }}</p>
+                    <p *ngIf="isPlayerTurn(player.uid)">It's your turn!</p>
                 </mat-card-content>
             </mat-card>
         </div>
     
-        <div class="game-area" formArrayName="cards">
+        <div class="game-area">
             <div class="card-grid">
-                <div class="card" *ngFor="let card of cards.controls; let i = index" (click)="revealCard(cards.at(i))">
-                    <mat-card *ngIf="!card.get('revealed').value">
+                <div class="card" *ngFor="let card of cards; let i = index" (click)="revealCard(cards.at(i))">
+                    <mat-card *ngIf="!card.revealed">
                         <mat-card-content class="card-content">
-                            <img [src]="card.get('images').get('setLogo').value" alt="Set Logo Image" />
+                            <img [src]="card.images.setLogo" alt="Set Logo Image" />
                         </mat-card-content>
                     </mat-card>
-                    <mat-card *ngIf="card.get('revealed').value">
+                    <mat-card *ngIf="card.revealed">
                         <mat-card-content class="card-content">
-                            <img [src]="card.get('images').get('small').value" alt="Card Image" />
+                            <img [src]="card.images.small" alt="Card Image" />
                         </mat-card-content>
                     </mat-card>
                 </div>
@@ -41,7 +41,7 @@
                 <mat-card-title>Matches Left: {{ currentGame$.matchesRemaining }}</mat-card-title>
             </mat-card>
         </div>
-    </form>
+    </div>
 
     <div class="podium" *ngIf="gameFinished">
         <h3>Congrats! Winner:</h3>
