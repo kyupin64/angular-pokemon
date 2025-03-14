@@ -1,11 +1,11 @@
 import { CurrentGameCard } from "./current-game-card";
-import { User } from "./user";
+import { Player } from "./player";
 
 export interface CurrentGame {
     cardSetId: string,
     cards: Array<CurrentGameCard>,
-    players: Array<User>,
-    turn: User,
+    players: Array<Player>,
+    turn: Player,
     matchesRemaining: number,
     round: number
 }

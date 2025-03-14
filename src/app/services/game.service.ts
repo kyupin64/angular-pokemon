@@ -1,21 +1,20 @@
 import { Injectable } from '@angular/core';
 
 import { CurrentGame } from '../interfaces/current-game';
-import { User } from '../interfaces/user';
 import { CurrentGameCard } from '../interfaces/current-game-card';
 
 import { CardsService } from './cards.service';
 import { UsersService } from './users.service';
 import { BehaviorSubject } from 'rxjs';
+import { Player } from '../interfaces/player';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
   private currentGame = new BehaviorSubject<CurrentGame | null>(null);
-  playerUsers: Array<User | null> = [];
+  players: Array<Player | null> = [];
   randomCards: Array<CurrentGameCard> = [];
-  turn: User;
 
   constructor(
     private cardsService: CardsService,
@@ -33,10 +32,10 @@ export class GameService {
     return this.currentGame.asObservable();
   }
 
-  async createNewGame(matchesNum: number, cardSet: string, players: Array<string>): Promise<boolean> {
+  async createNewGame(matchesNum: number, cardSet: string, playerUsers: Array<string>): Promise<boolean> {
     //reset current game
     this.currentGame.next(null);
-    this.playerUsers = [];
+    this.players = [];
     this.randomCards = [];
 
     // subscribe to getAllCardsInSet and determine which cards are used for matching
@@ -44,15 +43,15 @@ export class GameService {
       this.getRandomCards(cards, matchesNum);
     })
 
-    // convert player usernames to User objects
-    await this.getPlayersAsUsers(players);
+    // convert player usernames to Player objects
+    await this.getPlayers(playerUsers);
 
     // add all info to newGame object
     const newGame: CurrentGame = ({
       cardSetId: cardSet,
       cards: this.randomCards,
-      players: this.playerUsers,
-      turn: this.turn,
+      players: this.players,
+      turn: this.players[0],
       matchesRemaining: matchesNum,
       round: 1
     })
@@ -90,18 +89,19 @@ export class GameService {
     this.randomCards = this.cardsService.shuffleCards(this.randomCards);
   }
 
-  async getPlayersAsUsers(players: Array<string>) {
-    // Convert player usernames to User objects and add to playerUsers array
+  async getPlayers(players: Array<string>) {
+    // Convert player usernames to User objects and add to players array
     const userPromises = players.map(async (username, index) => {
       if (username) {
         const currentPlayer = await this.usersService.getUserWithUsername(username);
-        this.playerUsers[index] = currentPlayer;
+        this.players[index] = {
+          uid: currentPlayer.uid,
+          username: currentPlayer.username,
+          points: 0
+        };
 
-        if (index === 0) {
-          this.turn = currentPlayer; // Player 1 gets the first turn
-        }
       } else {
-        this.playerUsers[index] = null;
+        this.players[index] = null;
       }
     });
 

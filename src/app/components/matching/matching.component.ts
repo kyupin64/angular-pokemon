@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { CurrentGame } from '../../interfaces/current-game';
 import { GameService } from '../../services/game.service';
+import { Player } from '../../interfaces/player';
+import { CurrentGameCard } from '../../interfaces/current-game-card';
 
 @Component({
   selector: 'app-matching',
@@ -17,8 +19,8 @@ import { GameService } from '../../services/game.service';
 })
 export class MatchingComponent {
   currentGame$: CurrentGame | null = null;
-  players: Array<any> = [];
-  cards: Array<any> = [];
+  players: Array<Player> = [];
+  cards: Array<CurrentGameCard> = [];
 
   numCardsRevealed: number = 0;
   revealedCard: any | null;
@@ -33,7 +35,7 @@ export class MatchingComponent {
     this.gameService.getCurrentGame().subscribe((currentGame) => {
       if (currentGame) {
         this.currentGame$ = currentGame;
-        this.players = this.initializePlayers(currentGame.players);
+        this.players = currentGame.players;
         this.initializeCards(currentGame.cards);
       }
     });
@@ -56,19 +58,6 @@ export class MatchingComponent {
   
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-  }
-
-  initializePlayers(currentGamePlayers) {
-    // create array to store players
-    let playersArr = [];
-    for (let i = 0; i < 4; i++) {
-      const player = currentGamePlayers[i];
-      if (player) {
-        playersArr.push({ ...player, points: 0})
-      }
-    }
-
-    return playersArr;
   }
 
   isPlayerTurn(playerId: string): boolean {
