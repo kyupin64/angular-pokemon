@@ -44,7 +44,17 @@
     </div>
 
     <div class="podium" *ngIf="gameFinished">
-        <h3>Congrats! Winner:</h3>
-        <p>{{ currentGame$.turn.username }}</p>
+        <mat-card *ngFor="let player of players; let i = index" class="podium-card" [class.winner]="player.place === 1" [class.second]="player.place === 2">
+            <mat-card-header>
+                <mat-card-title *ngIf="player.place === 1">1st Place Winner!</mat-card-title>
+                <mat-card-title *ngIf="player.place === 2">2nd</mat-card-title>
+                <mat-card-title *ngIf="player.place === 3">3rd</mat-card-title>
+                <mat-card-title *ngIf="player.place === 4">4th</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <h1>{{ player.username }}</h1>
+                <p>Points: {{ player.points }}</p>
+            </mat-card-content>
+        </mat-card>
     </div>
 </div>

@@ -31,6 +31,7 @@ mat-card-header {
 
 .turn {
     color: red;
+    height: 14vh;
 }
   
 .game-area {
@@ -76,4 +77,38 @@ img {
     height: 198px;
     display: flex;
     align-items: center;
+}
+
+.podium-card {
+    width: 500px;
+}
+
+.podium-card mat-card-header {
+    padding: 12px;
+}
+
+.podium-card mat-card-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.podium-card h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.winner {
+    background-color: #ffb700;
+}
+
+.winner p {
+    font-size: 2rem;
+}
+
+.second {
+    background-color: #cfcfd1;
+}
+
+.second p {
+    font-size: 1.5rem;
 }

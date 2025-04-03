@@ -97,7 +97,8 @@ export class GameService {
         this.players[index] = {
           uid: currentPlayer.uid,
           username: currentPlayer.username,
-          points: 0
+          points: 0,
+          place: 0
         };
 
       } else {

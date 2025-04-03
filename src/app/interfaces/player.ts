@@ -1,5 +1,6 @@
 export interface Player {
     uid: string,
     username: string,
-    points: number
+    points: number,
+    place: number
 }

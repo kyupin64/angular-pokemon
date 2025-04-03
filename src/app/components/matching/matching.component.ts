@@ -110,6 +110,21 @@ export class MatchingComponent {
   }
 
   endGame() {
+    // place each player based on points
+    this.players.sort((a, b) => b.points - a.points);
+
+    let currentPlace = 1;
+    for (let i = 0; i < this.players.length; i++) {
+      // if it's not the first player and their points are the same as the previous player, they get the same place
+      if (i > 0 && this.players[i].points === this.players[i - 1].points) {
+        this.players[i].place = this.players[i - 1].place;
+      } else {
+        this.players[i].place = currentPlace;
+      }
+
+      currentPlace++;
+    }
+
     this.gameFinished = true;
   }
 
