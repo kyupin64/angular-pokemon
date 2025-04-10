@@ -19,32 +19,51 @@ import { CurrentGameCard } from '../../interfaces/current-game-card';
 })
 export class MatchingComponent {
   currentGame$: CurrentGame | null = null;
+  status: string = "";
+  turn: string = "";
+  round: number;
+  matchesRemaining: number;
   players: Array<Player> = [];
   cards: Array<CurrentGameCard> = [];
 
   numCardsRevealed: number = 0;
   revealedCard: any | null;
   loadingGame: boolean = true;
-  gameFinished: boolean = false;
+  gameSubscription;
 
   constructor(
     private gameService: GameService
   ) { }
 
   ngOnInit() {
-    this.gameService.getCurrentGame().subscribe((currentGame) => {
+    this.gameSubscription = this.gameService.getCurrentGame().subscribe((currentGame) => {
       if (currentGame) {
         this.currentGame$ = currentGame;
+        this.status = currentGame.status;
+        this.turn = currentGame.turn;
+        this.round = currentGame.round;
+        this.matchesRemaining = currentGame.matchesRemaining;
         this.players = currentGame.players;
         this.initializeCards(currentGame.cards);
       }
     });
   }
 
+  ngOnDestroy() {
+    // unsubscribe to avoid memory leaks
+    if (this.gameSubscription) {
+      this.gameSubscription.unsubscribe();
+    }
+  }
+
   async initializeCards(currentGameCards) {
     // wait for cards to be initialized
     await this.waitForCards();
     this.cards = currentGameCards;
+
+    this.status = "in-progress";
+    this.updateCurrentGame();
+
     this.loadingGame = false;
   }
 
@@ -61,7 +80,7 @@ export class MatchingComponent {
   }
 
   isPlayerTurn(playerId: string): boolean {
-    return this.currentGame$.turn?.uid === playerId;
+    return this.turn === playerId;
   }
 
   revealCard(card: any): void {
@@ -92,15 +111,17 @@ export class MatchingComponent {
     setTimeout(() => {
       card.found = true;
       this.revealedCard.found = true;
-      card.playerFound = this.currentGame$.turn;
-      this.revealedCard.playerFound = this.currentGame$.turn;
+      card.playerFoundId = this.currentGame$.turn;
+      this.revealedCard.playerFoundId = this.currentGame$.turn;
       this.revealedCard = null;
       this.numCardsRevealed = 0;
-      this.currentGame$.matchesRemaining -= 1;
+      this.matchesRemaining -= 1;
 
       // update player points
-      const player = this.players.find(p => p.uid === this.currentGame$.turn.uid);
+      const player = this.players.find(p => p.uid === this.currentGame$.turn);
       if (player) player.points += 1;
+
+      this.updateCurrentGame();
 
       // check if that was the last match, and if so, end the game
       if (this.currentGame$.matchesRemaining === 0) {
@@ -125,7 +146,8 @@ export class MatchingComponent {
       currentPlace++;
     }
 
-    this.gameFinished = true;
+    this.status = "finished";
+    this.updateCurrentGame();
   }
 
   ifNoMatchFound(card: any) {
@@ -140,22 +162,41 @@ export class MatchingComponent {
 
       // if one player, switch to next round
       if (this.players.length === 1) {
-        this.currentGame$.round += 1;
+        this.round += 1;
 
       // if multiple players and it's the last player's turn, switch to next round and set turn to first player
-      } else if (this.currentGame$.turn.uid === this.players[this.players.length - 1].uid) {
-        this.currentGame$.round += 1;
-        this.currentGame$.turn = this.players[0];
+      } else if (this.currentGame$.turn === this.players[this.players.length - 1].uid) {
+        this.round += 1;
+        this.turn = this.players[0].uid;
 
       // if multiple players and not last player's turn, switch to next player's turn
       } else {
         for (let i = 0; i < this.players.length; i++) {
-          if (this.currentGame$.turn.uid === this.players[i].uid) {
-            this.currentGame$.turn = this.players[i + 1];
+          if (this.currentGame$.turn === this.players[i].uid) {
+            this.turn = this.players[i + 1].uid;
             return;
           }
         }
       }
+
+      this.updateCurrentGame();
     }, 2000);
+  }
+
+  updateCurrentGame() {
+    const updatedGame: CurrentGame = { 
+      ...this.currentGame$, 
+      cards: this.cards, 
+      players: this.players,
+      status: this.status,
+      turn: this.turn,
+      round: this.round,
+      matchesRemaining: this.matchesRemaining
+    };
+
+    // prevent infinite loops
+    if (JSON.stringify(updatedGame) !== JSON.stringify(this.currentGame$)) {
+      this.gameService.saveGame(updatedGame);
+    }
   }
 }

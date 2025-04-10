@@ -3,7 +3,7 @@
         <h6>Loading game...</h6>
     </div>
 
-    <div class="game-container" *ngIf="!loadingGame && !gameFinished">
+    <div class="game-container" *ngIf="!loadingGame && status !== 'finished'">
         <div class="players">
             <mat-card *ngFor="let player of players; let i = index" class="player-card" [class.turn]="isPlayerTurn(player.uid)">
                 <mat-card-header>
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div class="podium" *ngIf="gameFinished">
+    <div class="podium" *ngIf="status === 'finished'">
         <mat-card *ngFor="let player of players; let i = index" class="podium-card" [class.winner]="player.place === 1" [class.second]="player.place === 2">
             <mat-card-header>
                 <mat-card-title *ngIf="player.place === 1">1st Place Winner!</mat-card-title>

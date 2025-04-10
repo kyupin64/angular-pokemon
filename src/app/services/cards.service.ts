@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable } from 'rxjs';
+import { catchError, from, map, Observable, of } from 'rxjs';
 import { CurrentGameCard } from '../interfaces/current-game-card';
 
 @Injectable({
@@ -22,33 +22,30 @@ export class CardsService {
     }
   }
 
-  getAllCardsInSet(setId: string): Observable<CurrentGameCard[]> {
+  async getAllCardsInSet(setId: string): Promise<CurrentGameCard[]> {
     const query = `set.id:${setId}`;
     const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(query)}`;
 
     try {
-      return from(
-        fetch(url)
-          .then(response => response.json())
-            .then(cards => {
-              // map to CurrentGameCard structure
-              return cards.data.map((card: any) => ({
-                id: card.id,
-                name: card.name,
-                found: false,
-                playerFound: null,
-                revealed: false,
-                images: {
-                  small: card.images.small,
-                  large: card.images.large,
-                  setLogo: card.set.images.logo
-                }
-              })) as CurrentGameCard[];
-            })
-      )
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      return data.data.map((card: any) => ({
+        id: card.id,
+        name: card.name,
+        found: false,
+        playerFoundId: null,
+        revealed: false,
+        images: {
+          small: card.images.small,
+          large: card.images.large,
+          setLogo: card.set.images.logo
+        }
+      })) as CurrentGameCard[];
+
     } catch (error) {
-      const errorCode = error.code;
-      return error.message;
+      console.error("Error fetching cards:", error);
+      return [];
     }
   }
 

@@ -1,10 +1,8 @@
-import { User } from "./user";
-
 export interface CurrentGameCard {
     id: string,
     name: string,
     found: boolean,
-    playerFound: User | null,
+    playerFoundId: string | null,
     revealed: boolean,
     images: {
         small: string,

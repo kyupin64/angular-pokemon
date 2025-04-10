@@ -7,6 +7,7 @@ import { CardsService } from './cards.service';
 import { UsersService } from './users.service';
 import { BehaviorSubject } from 'rxjs';
 import { Player } from '../interfaces/player';
+import { doc, Firestore, setDoc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -15,10 +16,12 @@ export class GameService {
   private currentGame = new BehaviorSubject<CurrentGame | null>(null);
   players: Array<Player | null> = [];
   randomCards: Array<CurrentGameCard> = [];
+  ids: Array<string> = [];
 
   constructor(
     private cardsService: CardsService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private db: Firestore
   ) {
     // check localStorage on initialization
     const gameData = localStorage.getItem('game');
@@ -37,34 +40,40 @@ export class GameService {
     this.currentGame.next(null);
     this.players = [];
     this.randomCards = [];
+    this.ids = [];
 
-    // subscribe to getAllCardsInSet and determine which cards are used for matching
-    this.cardsService.getAllCardsInSet(cardSet).subscribe(cards => {
-      this.getRandomCards(cards, matchesNum);
-    })
+    // get cards and determine which cards are used for matching
+    const cards = await this.cardsService.getAllCardsInSet(cardSet);
+    this.getRandomCards(cards, matchesNum);
 
     // convert player usernames to Player objects
     await this.getPlayers(playerUsers);
 
+    // placeholder: get random number for id
+    const rngId = '0' + (Math.round(Math.random() * 1000000)).toString();
+    this.ids.push(rngId);
+
     // add all info to newGame object
     const newGame: CurrentGame = ({
+      id: this.ids[0],
+      hostId: this.players[0].uid,
       cardSetId: cardSet,
       cards: this.randomCards,
       players: this.players,
-      turn: this.players[0],
+      turn: this.players[0].uid,
       matchesRemaining: matchesNum,
-      round: 1
-    })
+      round: 1,
+      status: 'created',
+      createdAt: new Date(),
+      lastUpdated: null
+    });
 
-    // set currentGame to newGame and add the item to localStorage
-    this.currentGame.next(newGame)
-    localStorage.setItem('game', JSON.stringify(newGame));
-
+    this.saveGame(newGame);
     return true;
   }
 
   getRandomCards(cards: Array<CurrentGameCard>, matchesNum: number) {
-    // check if there's enough unique cards to match the number of matches
+    // check if there are enough unique cards to match the number of matches
     if (matchesNum > cards.length) {
       throw new Error('Not enough unique cards to create the requested number of matches.');
     }
@@ -78,7 +87,7 @@ export class GameService {
 
     // add each random card to randomCards array
     randomCardSet.forEach(card => {
-      if (this.currentGame.value.cards.length < matchesNum * 2) {
+      if (this.randomCards.length < matchesNum * 2) {
         this.randomCards.push(card);
         this.randomCards.push({ ...card }); // add duplicate so there are 2 of each card
       } else {
@@ -86,11 +95,12 @@ export class GameService {
       }
     });
 
+    // shuffle cards so they're in a unique order
     this.randomCards = this.cardsService.shuffleCards(this.randomCards);
   }
 
   async getPlayers(players: Array<string>) {
-    // Convert player usernames to User objects and add to players array
+    // convert player usernames to User objects and add to players array
     const userPromises = players.map(async (username, index) => {
       if (username) {
         const currentPlayer = await this.usersService.getUserWithUsername(username);
@@ -107,5 +117,14 @@ export class GameService {
     });
 
     await Promise.all(userPromises);
+  }
+
+  async saveGame(game) {
+    // add the item to localStorage, set currentGame to the new/updated game, and add to firestore
+    localStorage.setItem('game', JSON.stringify(game));
+    this.currentGame.next(game);
+
+    const gameRef = doc(this.db, 'games', game.id);
+    await setDoc(gameRef, { ...game, lastUpdated: new Date() }, { merge: true });
   }
 }
