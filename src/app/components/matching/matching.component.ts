@@ -38,12 +38,12 @@ export class MatchingComponent {
   ngOnInit() {
     this.gameSubscription = this.gameService.getCurrentGame().subscribe((currentGame) => {
       if (currentGame) {
-        this.currentGame$ = currentGame;
+        this.currentGame$ = structuredClone(currentGame);
         this.status = currentGame.status;
         this.turn = currentGame.turn;
         this.round = currentGame.round;
         this.matchesRemaining = currentGame.matchesRemaining;
-        this.players = currentGame.players;
+        this.players = structuredClone(currentGame.players);
         this.initializeCards(currentGame.cards);
       }
     });
@@ -59,11 +59,13 @@ export class MatchingComponent {
   async initializeCards(currentGameCards) {
     // wait for cards to be initialized
     await this.waitForCards();
-    this.cards = currentGameCards;
+    this.cards = structuredClone(currentGameCards);
 
-    this.status = "in-progress";
+    if (this.status === "created") {
+      this.status = "in-progress";
+    }
+
     this.updateCurrentGame();
-
     this.loadingGame = false;
   }
 
@@ -111,14 +113,14 @@ export class MatchingComponent {
     setTimeout(() => {
       card.found = true;
       this.revealedCard.found = true;
-      card.playerFoundId = this.currentGame$.turn;
-      this.revealedCard.playerFoundId = this.currentGame$.turn;
+      card.playerFoundId = this.turn;
+      this.revealedCard.playerFoundId = this.turn;
       this.revealedCard = null;
       this.numCardsRevealed = 0;
       this.matchesRemaining -= 1;
 
       // update player points
-      const player = this.players.find(p => p.uid === this.currentGame$.turn);
+      const player = this.players.find(p => p.uid === this.turn);
       if (player) player.points += 1;
 
       this.updateCurrentGame();
@@ -132,19 +134,24 @@ export class MatchingComponent {
 
   endGame() {
     // place each player based on points
-    this.players.sort((a, b) => b.points - a.points);
+    if (this.players.length > 1) {
+      this.players.sort((a, b) => b.points - a.points);
 
-    let currentPlace = 1;
-    for (let i = 0; i < this.players.length; i++) {
-      // if it's not the first player and their points are the same as the previous player, they get the same place
-      if (i > 0 && this.players[i].points === this.players[i - 1].points) {
-        this.players[i].place = this.players[i - 1].place;
-      } else {
-        this.players[i].place = currentPlace;
+      let currentPlace = 1;
+      for (let i = 0; i < this.players.length; i++) {
+        // if it's not the first player and their points are the same as the previous player, they get the same place
+        if (i > 0 && this.players[i].points === this.players[i - 1].points) {
+          this.players[i].place = this.players[i - 1].place;
+        } else {
+          this.players[i].place = currentPlace;
+        }
+  
+        currentPlace++;
       }
-
-      currentPlace++;
-    }
+    } else {
+      // if only one player, set their place to 1 (placeholder)
+      this.players[0].place = 1;
+    };
 
     this.status = "finished";
     this.updateCurrentGame();
@@ -165,14 +172,14 @@ export class MatchingComponent {
         this.round += 1;
 
       // if multiple players and it's the last player's turn, switch to next round and set turn to first player
-      } else if (this.currentGame$.turn === this.players[this.players.length - 1].uid) {
+      } else if (this.turn === this.players[this.players.length - 1].uid) {
         this.round += 1;
         this.turn = this.players[0].uid;
 
       // if multiple players and not last player's turn, switch to next player's turn
       } else {
         for (let i = 0; i < this.players.length; i++) {
-          if (this.currentGame$.turn === this.players[i].uid) {
+          if (this.turn === this.players[i].uid) {
             this.turn = this.players[i + 1].uid;
             return;
           }
@@ -185,9 +192,9 @@ export class MatchingComponent {
 
   updateCurrentGame() {
     const updatedGame: CurrentGame = { 
-      ...this.currentGame$, 
-      cards: this.cards, 
-      players: this.players,
+      ...structuredClone(this.currentGame$), 
+      cards: structuredClone(this.cards), 
+      players: structuredClone(this.players),
       status: this.status,
       turn: this.turn,
       round: this.round,
