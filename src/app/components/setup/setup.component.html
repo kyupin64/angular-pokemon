@@ -1,4 +1,8 @@
-<mat-card>
+<div class="loading" *ngIf="loadingGame">
+    <h6>Loading game...</h6>
+</div>
+
+<mat-card  *ngIf="!loadingGame">
     <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <h2>New Game Setup</h2>
@@ -37,10 +41,7 @@
             <mat-form-field>
                 <mat-label>Number of matches</mat-label>
                 <mat-select formControlName="matchesNum" required>
-                    <mat-option [value]="4">4</mat-option>
-                    <mat-option [value]="6">6</mat-option>
-                    <mat-option [value]="8">8</mat-option>
-                    <mat-option [value]="10">10</mat-option>
+                    <mat-option *ngFor="let number of numbers" [value]="number">{{ number }}</mat-option>
                 </mat-select>
                 <mat-error *ngIf="form.get('matchesNum')?.hasError('required')">
                     Number of matches is required
@@ -63,7 +64,7 @@
             </mat-form-field>
             
             <br>
-            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.valid">Start new game</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">Start new game</button>
         </form>
     </mat-card-content>
 </mat-card>
