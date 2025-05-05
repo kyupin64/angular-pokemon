@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
-import { collection, Firestore, getDocs, limit, query, where } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDocs, limit, query, setDoc, where } from '@angular/fire/firestore';
 import { from, map, Observable } from 'rxjs';
 
 import { User } from '../interfaces/user';
 import { Player } from '../interfaces/player';
+import { LoginService } from './login.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsersService {
 
-  constructor(private db: Firestore) { }
+  constructor(private db: Firestore, private loginService: LoginService) { }
 
   getAllUsers(): Observable<User[]> {
     try {
@@ -76,5 +77,35 @@ export class UsersService {
       const errorCode = error.code;
       return error.message;
     };
+  }
+
+  async updateStats(players: Array<Player>, hostId) {
+    // loop through each player to update their stats in firestore
+    const updatePromises = players.map(async (player) => {
+      const user: User = await this.getUserWithUsername(player.username);
+
+      const beatPlayers = players.filter(p => p.place > player.place && !user.stats.beat.includes(p.username)).map(p => p.username);
+      const lostToPlayers = players.filter(p => p.place < player.place && !user.stats.lostTo.includes(p.username)).map(p => p.username);
+
+      const updatedStats = {
+        played: user.stats.played + 1,
+        won: player.place === 1 ? user.stats.won + 1 : user.stats.won,
+        lost: player.place !== 1 ? user.stats.lost + 1 : user.stats.lost,
+        matches: user.stats.matches + player.points,
+        beat: user.stats.beat.concat(beatPlayers),
+        lostTo: user.stats.lostTo.concat(lostToPlayers)
+      };
+    
+      const userRef = doc(this.db, 'users', player.uid);
+      await setDoc(userRef, { ...user, stats: updatedStats, lastUpdated: new Date() }, { merge: true });
+
+      // update currently logged in user observable
+      if (player.uid === hostId) {
+        this.loginService.updateCurrentUser({ ...user, stats: updatedStats, lastUpdated: new Date() });
+      };
+    });
+    
+    // wait for all players' stats to update
+    await Promise.all(updatePromises);
   }
 }

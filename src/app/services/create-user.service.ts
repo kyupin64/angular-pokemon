@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-import { addDoc, collection, Firestore, getDocs, query, where } from '@angular/fire/firestore';
-import { User } from '../interfaces/user';
+import { collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
 import { from, map, Observable } from 'rxjs';
 
 @Injectable({
@@ -31,17 +30,27 @@ export class CreateUserService {
       const user = userCredential.user;
 
       // create new user in firestore users collection
-      const newUser: User = {
+      const userRef = doc(this.db, "users", user.uid);
+      await setDoc(userRef, {
         uid: user.uid,
         email: email,
-        username: username
-      }
-      const usersCollection = collection(this.db, 'users');
-      await addDoc(usersCollection, newUser);
+        username: username,
+        stats: {
+          played: 0,
+          won: 0,
+          lost: 0,
+          matches: 0,
+          beat: [],
+          lostTo: []
+        },
+        createdAt: new Date(),
+        lastUpdated: null
+      });
+
       return 'successfully added new user';
     } catch (error) {
       const errorCode = error.code;
       return error.message;
-    }
+    };
   }
 }

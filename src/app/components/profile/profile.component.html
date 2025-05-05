@@ -1,15 +1,32 @@
 <div class="profile">
-    <mat-card class="player-card">
-        <mat-card-header>
-            <mat-card-title>{{ currentUser.username }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <h1>Stats</h1>
-            <p>Games played: </p>
-            <p>Games won: </p>
-            <p>Games lost: </p>
-            <p>Players you've beaten: </p>
-            <p>Players you've lost to: </p>
-        </mat-card-content>
-    </mat-card>
+    <ng-template #userCard let-user let-isOtherUser="isOtherUser">
+        <mat-card class="player-card">
+            <mat-card-header>
+                <mat-card-title>{{ user.username }}</mat-card-title>
+                <button *ngIf="isOtherUser" mat-icon-button (click)="closeUserProfile()" aria-label="Close player profile button">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-card-header>
+            <mat-card-content>
+                <h1>Stats</h1>
+                <p>Games played: {{ user.stats.played }}</p>
+                <p>Games won: {{ user.stats.won }}</p>
+                <p>Games lost: {{ user.stats.lost }}</p>
+                <p>Matches found: {{ user.stats.matches }}</p>
+                <p>Players {{ isOtherUser ? "they've" : "you've" }} beat: </p>
+                <div *ngIf="user.stats.beat[0]" class="userList">
+                    <mat-card *ngFor="let username of user.stats.beat" (click)="goToUserProfile(username)">{{ username }}</mat-card>
+                </div>
+                <p>Players {{ isOtherUser ? "they've" : "you've" }} lost to: </p>
+                <div *ngIf="user.stats.lostTo[0]" class="userList">
+                    <mat-card *ngFor="let username of user.stats.lostTo" (click)="goToUserProfile(username)">{{ username }}</mat-card>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </ng-template>
+
+    <ng-container *ngTemplateOutlet="userCard; context: { $implicit: currentUser, isOtherUser: false }"></ng-container>
+    <ng-container *ngIf="viewingUser">
+        <ng-container *ngTemplateOutlet="userCard; context: { $implicit: viewingUser, isOtherUser: true }"></ng-container>
+    </ng-container>
 </div>

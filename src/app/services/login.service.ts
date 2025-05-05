@@ -8,8 +8,6 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class LoginService {
-  // loggedIn: boolean = false;
-  // currentUser: User;
   private loggedIn = new BehaviorSubject<boolean>(false);
   private currentUser = new BehaviorSubject<User | null>(null);
 
@@ -23,7 +21,7 @@ export class LoginService {
       const user: User = JSON.parse(userData);
       this.currentUser.next(user);
       this.loggedIn.next(true);
-    }
+    };
   }
 
   getLoggedInBool() {
@@ -49,7 +47,7 @@ export class LoginService {
 
       // find user in firestore users collection
       const usersCollection =  collection(this.db, 'users');
-      const q = query(usersCollection, where('uid', '==', user.uid))
+      const q = query(usersCollection, where('uid', '==', user.uid));
       const querySnapshot = await getDocs(q);
 
       let foundUser;
@@ -64,11 +62,16 @@ export class LoginService {
         localStorage.setItem('user', JSON.stringify(foundUser));
         return foundUser;
       } else {
-        return 'no user found'
-      }
+        return 'no user found';
+      };
     } catch (error) {
       const errorCode = error.code;
       return error.message;
-    }
+    };
+  }
+
+  updateCurrentUser(user: User) {
+    this.currentUser.next(user);
+    localStorage.setItem('user', JSON.stringify(user));
   }
 }

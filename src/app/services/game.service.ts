@@ -38,7 +38,7 @@ export class GameService {
       // get cards, players, and game id (placeholder)
       const cards: Array<CurrentGameCard> | null = await this.cardsService.getRandomCards(cardSet, matchesNum);
       const players: Array<Player> | null = await this.usersService.getPlayers(playerUsers);
-      const id: string = '000' + (Math.round(Math.random() * 1000000)).toString(); // placeholder
+      const id: string = '0000' + (Math.round(Math.random() * 1000000)).toString(); // placeholder
   
       // add all info to newGame object
       const newGame: CurrentGame = ({
@@ -129,6 +129,7 @@ export class GameService {
     game.status = 'finished';
 
     await this.saveGame(game);
+    await this.usersService.updateStats(players, game.hostId);
   }
 
   async saveGame(game) {
