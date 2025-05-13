@@ -11,5 +11,6 @@ export interface User {
         lostTo: Array<string>
     },
     createdAt: Date,
-    lastUpdated: Date
+    lastUpdated: Date,
+    currentGame: string
 }

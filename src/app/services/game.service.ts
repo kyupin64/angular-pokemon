@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { doc, Firestore, setDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { collection, doc, Firestore, getDocs, limit, query, setDoc, where } from '@angular/fire/firestore';
+import { BehaviorSubject } from 'rxjs';
 
 import { CurrentGame } from '../interfaces/current-game';
 import { CurrentGameCard } from '../interfaces/current-game-card';
@@ -8,29 +8,69 @@ import { Player } from '../interfaces/player';
 
 import { CardsService } from './cards.service';
 import { UsersService } from './users.service';
+import { LoginService } from './login.service';
+import { User } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
   private currentGame = new BehaviorSubject<CurrentGame | null>(null);
-  userSubscription: Subscription;
+  currentUser: User | null = null;
 
   constructor(
     private cardsService: CardsService,
     private usersService: UsersService,
+    private loginService: LoginService,
     private db: Firestore
   ) {
-    // check localStorage on initialization
-    const gameData = localStorage.getItem('game');
-    if (gameData) {
-      const game: CurrentGame = JSON.parse(gameData);
-      this.currentGame.next(game);
-    };
+    this.loginService.getLoggedInBool().subscribe((loggedIn) => {
+      if (loggedIn) {
+        this.init(); // wait until user logs in to manually initialize
+      };
+    });
   }
 
   getCurrentGame() {
     return this.currentGame.asObservable();
+  }
+
+  init() {
+    // subscribe to getCurrentUser, set currentUser to user, and find current game
+    const userSubscription = this.loginService.getCurrentUser().subscribe((user) => {
+      if (user) {
+        this.currentUser = user;
+        if (user.currentGame) {
+          this.findGame(user.currentGame);
+        };
+      };
+    });
+    // unsubscribe to avoid memory leaks
+    userSubscription.unsubscribe();
+  }
+
+  async findGame(gameId) {
+    try {
+      // find game in firestore games collection
+      const gamesCollection = collection(this.db, 'games');
+      const q = query(gamesCollection, where('id', '==', gameId));
+      const querySnapshot = await getDocs(q);
+
+      let foundGame;
+      querySnapshot.forEach((doc,) => {
+        foundGame = doc.data();
+      }, limit(1));
+
+      // if game exists, set currentGame to foundGame
+      if (foundGame) {
+        this.currentGame.next(foundGame);
+      } else {
+        return 'no game found';
+      };
+    } catch (error) {
+      const errorCode = error.code;
+      return error.message;
+    };
   }
 
   async createNewGame(matchesNum: number, cardSet: string, playerUsers: Array<string>): Promise<boolean> {
@@ -56,6 +96,7 @@ export class GameService {
       });
   
       await this.saveGame(newGame);
+      await this.loginService.updateCurrentUser({ ...this.currentUser, currentGame: id });
   
       return true;
     } catch (err) {

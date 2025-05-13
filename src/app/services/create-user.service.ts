@@ -44,7 +44,8 @@ export class CreateUserService {
           lostTo: []
         },
         createdAt: new Date(),
-        lastUpdated: null
+        lastUpdated: null,
+        currentGame: null
       });
 
       return 'successfully added new user';

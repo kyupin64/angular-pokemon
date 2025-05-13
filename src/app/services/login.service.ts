@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
-import { collection, Firestore, getDocs, limit, query, where } from '@angular/fire/firestore'
+import { collection, doc, Firestore, getDocs, limit, query, setDoc, where } from '@angular/fire/firestore';
 import { User } from '../interfaces/user';
 import { BehaviorSubject } from 'rxjs';
 
@@ -52,7 +52,7 @@ export class LoginService {
 
       let foundUser;
       querySnapshot.forEach((doc,) => {
-        foundUser = doc.data();
+        foundUser = { ...doc.data(), uid: doc.id };
       }, limit(1));
 
       // if user exists, set currentUser to foundUser and set loggedIn to true
@@ -70,8 +70,11 @@ export class LoginService {
     };
   }
 
-  updateCurrentUser(user: User) {
+  async updateCurrentUser(user: User) {
     this.currentUser.next(user);
     localStorage.setItem('user', JSON.stringify(user));
+    
+    const userRef = doc(this.db, 'users', user.uid);
+    await setDoc(userRef, { ...user, lastUpdated: new Date() }, { merge: true });
   }
 }

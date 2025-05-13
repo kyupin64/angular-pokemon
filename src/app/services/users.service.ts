@@ -64,7 +64,7 @@ export class UsersService {
 
       let foundUser;
       querySnapshot.forEach((doc,) => {
-        foundUser = doc.data();
+        foundUser = { ...doc.data(), uid: doc.id };
       }, limit(1));
 
       // return user if it exists
@@ -83,17 +83,18 @@ export class UsersService {
     // loop through each player to update their stats in firestore
     const updatePromises = players.map(async (player) => {
       const user: User = await this.getUserWithUsername(player.username);
+      const stats = user.stats;
 
-      const beatPlayers = players.filter(p => p.place > player.place && !user.stats.beat.includes(p.username)).map(p => p.username);
-      const lostToPlayers = players.filter(p => p.place < player.place && !user.stats.lostTo.includes(p.username)).map(p => p.username);
+      const beatPlayers = players.filter(p => p.place > player.place && !stats.beat.includes(p.username)).map(p => p.username);
+      const lostToPlayers = players.filter(p => p.place < player.place && !stats.lostTo.includes(p.username)).map(p => p.username);
 
       const updatedStats = {
-        played: user.stats.played + 1,
-        won: player.place === 1 ? user.stats.won + 1 : user.stats.won,
-        lost: player.place !== 1 ? user.stats.lost + 1 : user.stats.lost,
-        matches: user.stats.matches + player.points,
-        beat: user.stats.beat.concat(beatPlayers),
-        lostTo: user.stats.lostTo.concat(lostToPlayers)
+        played: stats.played + 1,
+        won: player.place === 1 ? stats.won + 1 : stats.won,
+        lost: player.place !== 1 ? stats.lost + 1 : stats.lost,
+        matches: stats.matches + player.points,
+        beat: stats.beat.concat(beatPlayers),
+        lostTo: stats.lostTo.concat(lostToPlayers)
       };
     
       const userRef = doc(this.db, 'users', player.uid);
@@ -101,7 +102,7 @@ export class UsersService {
 
       // update currently logged in user observable
       if (player.uid === hostId) {
-        this.loginService.updateCurrentUser({ ...user, stats: updatedStats, lastUpdated: new Date() });
+        this.loginService.updateCurrentUser({ ...user, stats: updatedStats, currentGame: null, lastUpdated: new Date() });
       };
     });
     
